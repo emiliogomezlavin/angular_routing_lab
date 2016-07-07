@@ -26,41 +26,46 @@ app.config(function($routeProvider, $locationProvider){
 /////////////////
 // CONTROLLERS //
 /////////////////
-app.controller('WinesIndexCtrl',function($scope, $http){
-
-    $http.get('http://daretoexplore.herokuapp.com/wines/')
-        .then(function(response) {
-            $scope.wines = response.data;
-        });
-  // $scope.wines = WineService.query(); 
+app.controller('WinesIndexCtrl',function($scope, WineService){ 
+    $scope.wines = WineService.query(); 
+    console.log($scope.wines);
 });
 
-app.controller('WinesShowCtrl',function($scope, $http, $routeParams){
-    $http.get('http://daretoexplore.herokuapp.com/wines/' + $routeParams.id)
-        .then(function(response) {
-            // console.log(response.data)
-            $scope.wine = response.data;
-        });
-  // $scope.wine = WineService.get($routeParams.id);
+app.controller('WinesShowCtrl',function($scope, WineService, $routeParams){
+    $scope.wine = WineService.get($routeParams.id);
 });
 
 ////////////
 // MODELS //
 ////////////
 
-app.factory('WineService', function(){
+
+/// This solution doesn't fully work. The function needs to be called as an object
+//   with a key of the function that calls the actual http request. You could look
+//   into Michael's solution. For easier understanding look into last commit with 
+//   the ajax calls from the controller
+
+app.factory('WineService', function($http){
 
   var WineService = {};
+  WineService.$inject = ['$http', '$scope'];
 
   WineService.query = function(){
-    return ALL_WINES;
+    console.log("I get called before the http request");
+    $http.get('http://daretoexplore.herokuapp.com/wines/')
+        .then(function(response) {
+            console.log("I get called when success from the request", response.data)
+            return response.data;
+        });
   };
 
   WineService.get = function(id){
     var id = parseInt(id);
-    return ALL_WINES.find(function(wine){
-      return wine.id == id;
-    });
+    console.log(id);
+    $http.get('http://daretoexplore.herokuapp.com/wines/' + id)
+        .then(function(response) {
+            return response.data;
+        });
   };
 
   return WineService;
